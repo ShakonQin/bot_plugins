@@ -1,0 +1,8 @@
+name = "translator"
+version = "1.0.0"
+main = "main.py"
+entry_class = "TranslatorPlugin"
+author = "BoChat Community"
+description = "中英互译插件，支持 /trans 命令进行中译英和英译中，同时支持 BoChat 群聊和 QQ 群聊/私聊"
+
+pip_dependencies = ["bochat-sdk[ws]>=0.1", "httpx>=0.27,<1.0", "pyyaml>=6.0"]

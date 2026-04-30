@@ -1,0 +1,39 @@
+# Python 缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python 虚拟环境
+.venv/
+venv/
+env/
+.env
+
+# IDE 配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.bak
+
+# 配置文件（包含敏感信息）
+# 注意：config.yaml 包含密码和token，不要提交
+github_subscriber/config.yaml
+bochat_forwarder/config.yaml
+translator/config.yaml
+
+# 但保留示例配置文件
+!github_subscriber/config.yaml.example
+!bochat_forwarder/config.yaml.example
+!translator/config.yaml.example

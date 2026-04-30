@@ -1,0 +1,8 @@
+name = "bochat_forwarder"
+version = "1.0.0"
+main = "main.py"
+entry_class = "BochatForwarderPlugin"
+author = "BoChat Community"
+description = "BoChat <-> QQ 双向消息转发插件，支持群聊/私聊消息桥接"
+
+pip_dependencies = ["bochat-sdk[ws]>=0.1", "httpx>=0.27,<1.0", "pyyaml>=6.0"]
