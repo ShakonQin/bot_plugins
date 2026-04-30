@@ -1,6 +1,6 @@
-# NcatBot 插件仓库
+# NcatBot bochat 插件仓库
 
-这是一个 NcatBot 插件集合仓库，包含以下三个插件：
+这是一个 NcatBot 兼容bochat  插件集合仓库，包含以下三个插件：
 
 ## 插件列表
 
