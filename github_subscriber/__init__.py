@@ -1,3 +1,3 @@
-from .main import GitHubSubscriberPlugin
+from .main import GitHubSubscriberService
 
-__all__ = ["GitHubSubscriberPlugin"]
+__all__ = ["GitHubSubscriberService"]

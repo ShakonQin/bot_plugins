@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from ncatbot.utils import get_log
-
-LOG = get_log("GHSubBridge")
+import logging
 
 from bochat_sdk import BochatClient
+
+LOG = logging.getLogger("GHSubBridge")
 
 
 class BochatBridge:

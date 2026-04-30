@@ -1,26 +1,23 @@
-"""中英互译插件
+"""中英互译服务
 
-基于 NcatBot 插件规范开发，通过 /trans 命令实现中英文互译。
-优先支持 BoChat 群聊，同时兼容 QQ 群聊和私聊场景。
+独立于 ncatbot 运行，通过 BoChat WebSocket 监听群聊消息，
+响应 /trans 命令实现中英文互译。
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from pathlib import Path
 from typing import Any
 
 import yaml
-from ncatbot.core import registrar
-from ncatbot.event.qq import GroupMessageEvent, PrivateMessageEvent
-from ncatbot.plugin import NcatBotPlugin
-from ncatbot.utils import get_log
-
 from bochat_sdk import MessageResponse
 
 from .bochat_bridge import BochatBridge
 from .translator import LANG_MAP, TranslateClient, TranslateError
 
-LOG = get_log("TranslatorPlugin")
+LOG = logging.getLogger("TranslatorPlugin")
 
 USAGE = (
     "用法: /trans <模式> <文本>\n"
@@ -29,20 +26,17 @@ USAGE = (
 )
 
 
-class TranslatorPlugin(NcatBotPlugin):
-    name = "translator"
-    version = "1.0.0"
-    author = "BoChat Community"
-    description = "中英互译插件"
+class TranslatorService:
+    """独立的翻译服务，不依赖 ncatbot。"""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, config_path: str | Path | None = None) -> None:
+        self._config_path = Path(config_path) if config_path else Path(__file__).parent / "config.yaml"
         self._client: TranslateClient | None = None
         self._bridge: BochatBridge | None = None
+        self._running = False
 
-    # ── 生命周期 ─────────────────────────────────────────────
-
-    async def on_load(self) -> None:
+    async def start(self) -> None:
+        """启动服务。"""
         config = self._load_config()
         if config is None:
             return
@@ -63,31 +57,46 @@ class TranslatorPlugin(NcatBotPlugin):
         try:
             await self._bridge.start()
             self._bridge.register_message_handler(self._on_bochat_message)
-            LOG.info("Translator 插件加载完成 (BoChat + QQ)")
+            self._running = True
+            LOG.info("Translator 服务启动完成")
         except Exception:
-            LOG.exception("连接 BoChat 平台失败，BoChat 群聊翻译不可用")
+            LOG.exception("连接 BoChat 平台失败")
             self._bridge = None
-            LOG.info("Translator 插件加载完成 (仅 QQ)")
 
-    async def on_close(self) -> None:
+    async def stop(self) -> None:
+        """停止服务。"""
+        self._running = False
         if self._bridge:
             await self._bridge.stop()
         if self._client:
             await self._client.close()
-        LOG.info("Translator 插件已卸载")
+        LOG.info("Translator 服务已停止")
+
+    async def run_forever(self) -> None:
+        """启动服务并持续运行，直到收到取消信号。"""
+        await self.start()
+        if not self._running:
+            LOG.error("服务启动失败，退出")
+            return
+        try:
+            while self._running:
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await self.stop()
 
     # ── 配置加载 ─────────────────────────────────────────────
 
     def _load_config(self) -> dict[str, Any] | None:
-        config_path = Path(__file__).parent / "config.yaml"
-        if not config_path.exists():
-            LOG.error("配置文件不存在: %s", config_path)
+        if not self._config_path.exists():
+            LOG.error("配置文件不存在: %s", self._config_path)
             return None
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(self._config_path, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         except Exception:
-            LOG.exception("读取配置文件失败: %s", config_path)
+            LOG.exception("读取配置文件失败: %s", self._config_path)
             return None
 
     # ── 命令解析 ─────────────────────────────────────────────
@@ -129,8 +138,8 @@ class TranslatorPlugin(NcatBotPlugin):
 
     async def _on_bochat_message(self, msg: MessageResponse) -> None:
         LOG.debug(
-            "收到 BoChat 消息: group=%s, sender=%s, type=%s, content=%s",
-            msg.group_id, msg.sender_id, msg.msg_type, msg.content.to_dict() if hasattr(msg.content, "to_dict") else msg.content,
+            "收到 BoChat 消息: group=%s, sender=%s, type=%s",
+            msg.group_id, msg.sender_id, msg.msg_type,
         )
         if self._bridge and msg.sender_id == self._bridge.bot_id:
             LOG.debug("忽略自身消息")
@@ -155,29 +164,3 @@ class TranslatorPlugin(NcatBotPlugin):
         LOG.info("翻译结果: %s", reply)
         if self._bridge:
             await self._bridge.send_text(msg.group_id, reply)
-
-    # ── QQ 群聊/私聊消息处理 ─────────────────────────────────
-
-    @registrar.on_group_message()
-    async def on_group_message(self, event: GroupMessageEvent) -> None:
-        parsed = self._parse_command(event.raw_message)
-        if parsed is None:
-            if event.raw_message.strip() == "/trans":
-                await self.api.qq.post_group_msg(event.group_id, text=USAGE)
-            return
-
-        mode, text = parsed
-        reply = await self._handle_translate(mode, text)
-        await self.api.qq.post_group_msg(event.group_id, text=reply)
-
-    @registrar.on_private_message()
-    async def on_private_message(self, event: PrivateMessageEvent) -> None:
-        parsed = self._parse_command(event.raw_message)
-        if parsed is None:
-            if event.raw_message.strip() == "/trans":
-                await self.api.qq.post_private_msg(event.user_id, text=USAGE)
-            return
-
-        mode, text = parsed
-        reply = await self._handle_translate(mode, text)
-        await self.api.qq.post_private_msg(event.user_id, text=reply)

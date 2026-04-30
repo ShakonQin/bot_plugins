@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Callable, Coroutine
 
-from ncatbot.utils import get_log
-
-LOG = get_log("TransBridge")
-
 from bochat_sdk import BochatClient, MessageResponse, WsDispatcher
+
+LOG = logging.getLogger("TransBridge")
 
 
 class BochatBridge:

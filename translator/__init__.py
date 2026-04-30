@@ -1,3 +1,3 @@
-from .main import TranslatorPlugin
+from .main import TranslatorService
 
-__all__ = ["TranslatorPlugin"]
+__all__ = ["TranslatorService"]

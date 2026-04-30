@@ -6,13 +6,13 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import random
 from typing import Any
 
 import httpx
-from ncatbot.utils import get_log
 
-LOG = get_log("Translator")
+LOG = logging.getLogger("Translator")
 
 MYMEMORY_URL = "https://api.mymemory.translated.net/get"
 BAIDU_URL = "https://fanyi-api.baidu.com/api/trans/vip/translate"

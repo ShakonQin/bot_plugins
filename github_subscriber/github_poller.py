@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 import httpx
-from ncatbot.utils import get_log
 
-LOG = get_log("GitHubPoller")
+LOG = logging.getLogger("GitHubPoller")
 
 EVENTS_URL = "https://api.github.com/repos/{repo}/events"
 
