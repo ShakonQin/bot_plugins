@@ -1,7 +1,3 @@
-# NcatBot bochat 插件仓库
-
-这是一个 NcatBot 兼容bochat  插件集合仓库，包含以下三个插件：
-
 ## 插件列表
 
 ### 1. GitHub Subscriber (github_subscriber)
@@ -10,7 +6,7 @@ GitHub 仓库事件订阅插件，轮询 GitHub Events API 监控仓库动态，
 **主要功能：**
 - 轮询监控 GitHub 仓库事件（Issue、PR、Release、Star、Push 等）
 - 事件格式化为结构化中文消息
-- 支持同时推送到 QQ 群和 BoChat 群
+- 支持推送到 BoChat 群
 - 多仓库同时订阅，每个仓库可配置独立的事件白名单和推送目标
 
 ### 2. BoChat Forwarder (bochat_forwarder)
@@ -27,7 +23,7 @@ BoChat 与 QQ 消息双向转发插件，在 BoChat 平台和 QQ 群之间建立
 
 **主要功能：**
 - 中英文互译
-- 支持 QQ 群和 BoChat 群
+- 支持 BoChat 群
 - 可配置翻译服务提供商
 - 简单的命令触发翻译
 
@@ -64,54 +60,6 @@ ncatbot-plugins/
     └── __init__.py
 ```
 
-## 安装使用
-
-### 1. 克隆仓库
-
-```bash
-git clone https://github.com/YOUR_USERNAME/ncatbot-plugins.git
-cd ncatbot-plugins
-```
-
-### 2. 复制插件到 NcatBot
-
-将需要的插件目录复制到 NcatBot 的 `plugins/` 目录下：
-
-```bash
-# 复制单个插件
-cp -r github_subscriber /path/to/your-bot/plugins/
-
-# 或复制所有插件
-cp -r github_subscriber bochat_forwarder translator /path/to/your-bot/plugins/
-```
-
-### 3. 安装依赖
-
-```bash
-# 通用依赖
-pip install httpx pyyaml
-
-# 如需使用 BoChat 功能
-pip install bochat-sdk
-```
-
-### 4. 配置插件
-
-进入插件目录，复制示例配置文件并编辑：
-
-```bash
-cd /path/to/your-bot/plugins/github_subscriber
-cp config.yaml.example config.yaml
-# 编辑 config.yaml 填入你的配置
-```
-
-### 5. 运行
-
-```bash
-cd /path/to/your-bot
-ncatbot run
-```
-
 ## 配置说明
 
 每个插件都有自己的 `config.yaml` 配置文件。首次使用时：
@@ -127,7 +75,7 @@ ncatbot run
 - 每个插件都是独立的，可以单独使用
 - 插件基于 NcatBot 插件规范开发
 - 配置文件使用 YAML 格式
-- 所有插件都支持 QQ 群和 BoChat 群的消息推送
+- 所有插件都支持 BoChat 群的消息推送
 
 ## 注意事项
 
