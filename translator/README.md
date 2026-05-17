@@ -26,9 +26,11 @@
 ```yaml
 bochat:
   base_url: "http://127.0.0.1:8080"
-  account: "your_account"
-  password: "your_password"
-  bot_id: ""             # 留空自动选择
+  bot_token: "b_xxx:1710000000:signature"  # BoChat Bot Token（必填）
+  # 可选：指定监控的群号列表，留空则监控 Bot 所在的所有群
+  # group_ids:
+  #   - "g_abc123"
+  #   - "g_def456"
 
 translate:
   provider: "mymemory"   # 或 "baidu"
@@ -38,6 +40,12 @@ translate:
     app_id: ""           # 百度翻译 APP ID
     secret_key: ""       # 百度翻译密钥
 ```
+
+### 获取 Bot Token
+
+1. 在 BoChat 平台注册并登录
+2. 通过 `GET /api/v1/bots` 接口获取 Bot 的 `token` 字段
+3. 将 token 填入 `config.yaml` 的 `bochat.bot_token`
 
 ## 启动
 

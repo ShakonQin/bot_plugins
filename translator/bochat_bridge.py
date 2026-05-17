@@ -15,14 +15,12 @@ class BochatBridge:
     def __init__(
         self,
         base_url: str,
-        account: str,
-        password: str,
-        bot_id: str = "",
+        bot_token: str,
+        group_ids: list[str] | None = None,
     ):
         self._base_url = base_url
-        self._account = account
-        self._password = password
-        self._preferred_bot_id = bot_id
+        self._bot_token = bot_token
+        self._group_ids = set(group_ids) if group_ids else None
         self._client: BochatClient | None = None
         self._dispatcher: WsDispatcher | None = None
         self._bot_id: str = ""
@@ -33,44 +31,25 @@ class BochatBridge:
         return self._bot_id
 
     async def start(self) -> None:
-        self._client = BochatClient.builder(self._base_url).build()
-
-        LOG.info("正在登录 BoChat 账号: %s", self._account)
-        await (
-            self._client.auth()
-            .login()
-            .account(self._account)
-            .password(self._password)
-            .send()
+        self._client = (
+            BochatClient.builder(self._base_url)
+            .bot_token(self._bot_token)
+            .build()
         )
-        LOG.info("BoChat 登录成功")
-
-        bots = await self._client.bots().list()
-        if not bots:
-            raise RuntimeError("BoChat 账号下没有可用的 Bot")
-
-        selected = None
-        if self._preferred_bot_id:
-            selected = next((b for b in bots if b.bot_id == self._preferred_bot_id), None)
-            if not selected:
-                LOG.warning("指定的 bot_id=%s 未找到，将使用第一个活跃 Bot", self._preferred_bot_id)
-
-        if not selected:
-            active_bots = [b for b in bots if b.status == "active"]
-            if not active_bots:
-                raise RuntimeError("没有处于 active 状态的 Bot")
-            selected = active_bots[0]
-
-        self._bot_id = selected.bot_id
-        self._client.set_bot_token(selected.token)
-        LOG.info("已选择 Bot: %s (%s)", selected.name, selected.bot_id)
+        LOG.info("BoChat 客户端已初始化（BOT_TOKEN 模式）")
 
         session = await self._client.ws().build()
         handle = await session.spawn()
         self._dispatcher = handle.into_dispatcher()
 
         conn = await self._dispatcher.wait_connection_payload(timeout=15)
-        LOG.info("BoChat WebSocket 已连接，可用群: %s", ", ".join(conn.group_ids))
+        self._bot_id = conn.bot_id
+        if self._group_ids:
+            available = set(conn.group_ids)
+            monitored = available & self._group_ids
+            LOG.info("BoChat WebSocket 已连接，监控群: %s", ", ".join(monitored) or "(无匹配)")
+        else:
+            LOG.info("BoChat WebSocket 已连接，可用群: %s", ", ".join(conn.group_ids))
 
     def register_message_handler(
         self,
@@ -82,8 +61,17 @@ class BochatBridge:
             LOG.warning("Dispatcher 尚未初始化，回调将在连接后生效")
             return
 
+        LOG.info("正在注册 WebSocket 消息处理器 (on_message)")
+
         @self._dispatcher.on_message()
         async def _handler(msg: MessageResponse) -> None:
+            LOG.info(
+                "收到 WebSocket 消息: group=%s, sender=%s, type=%s",
+                msg.group_id, msg.sender_id, msg.msg_type,
+            )
+            if self._group_ids and msg.group_id not in self._group_ids:
+                LOG.debug("消息群 %s 不在监控列表中，跳过", msg.group_id)
+                return
             if self._on_message:
                 try:
                     await self._on_message(msg)

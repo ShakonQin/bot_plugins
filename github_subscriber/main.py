@@ -122,11 +122,13 @@ class GitHubSubscriberService:
         for sub in self._subs:
             self._poller.add_repo(sub.repo)
 
+        bot_token = bochat_cfg.get("bot_token", "")
+        if not bot_token:
+            LOG.error("bochat.bot_token 未配置，请在 config.yaml 中填写 Bot Token")
+            return
         self._bridge = BochatBridge(
             base_url=bochat_cfg.get("base_url", "http://127.0.0.1:8080"),
-            account=bochat_cfg.get("account", ""),
-            password=bochat_cfg.get("password", ""),
-            bot_id=bochat_cfg.get("bot_id", ""),
+            bot_token=bot_token,
         )
         try:
             await self._bridge.start()

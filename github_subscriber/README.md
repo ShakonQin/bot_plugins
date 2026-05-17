@@ -27,9 +27,7 @@ github:
 
 bochat:
   base_url: "http://127.0.0.1:8080"
-  account: "your_account"
-  password: "your_password"
-  bot_id: ""             # 留空自动选择第一个活跃 Bot
+  bot_token: "b_xxx:1710000000:signature"  # BoChat Bot Token（必填）
 
 subscriptions:
   - name: "我的项目"
@@ -42,6 +40,12 @@ subscriptions:
     targets:
       - id: "g_xxx"     # BoChat 群 ID
 ```
+
+### 获取 Bot Token
+
+1. 在 BoChat 平台注册并登录
+2. 通过 `GET /api/v1/bots` 接口获取 Bot 的 `token` 字段
+3. 将 token 填入 `config.yaml` 的 `bochat.bot_token`
 
 ## 启动
 

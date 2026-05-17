@@ -48,11 +48,14 @@ class TranslatorService:
         LOG.info("翻译后端: %s", provider)
 
         bochat_cfg = config.get("bochat", {})
+        bot_token = bochat_cfg.get("bot_token", "")
+        if not bot_token:
+            LOG.error("bochat.bot_token 未配置，请在 config.yaml 中填写 Bot Token")
+            return
         self._bridge = BochatBridge(
             base_url=bochat_cfg.get("base_url", "http://127.0.0.1:8080"),
-            account=bochat_cfg.get("account", ""),
-            password=bochat_cfg.get("password", ""),
-            bot_id=bochat_cfg.get("bot_id", ""),
+            bot_token=bot_token,
+            group_ids=bochat_cfg.get("group_ids"),
         )
         try:
             await self._bridge.start()
@@ -141,9 +144,6 @@ class TranslatorService:
             "收到 BoChat 消息: group=%s, sender=%s, type=%s",
             msg.group_id, msg.sender_id, msg.msg_type,
         )
-        if self._bridge and msg.sender_id == self._bridge.bot_id:
-            LOG.debug("忽略自身消息")
-            return
 
         content = msg.content.to_dict() if hasattr(msg.content, "to_dict") else {}
         raw_text = content.get("text", "")

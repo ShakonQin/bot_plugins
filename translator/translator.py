@@ -36,7 +36,7 @@ class TranslateClient:
     def __init__(self, provider: str = "mymemory", **kwargs: Any) -> None:
         self._provider = provider
         self._opts = kwargs
-        self._http = httpx.AsyncClient(timeout=10.0)
+        self._http = httpx.AsyncClient(timeout=10.0, trust_env=False)
 
     async def close(self) -> None:
         await self._http.aclose()

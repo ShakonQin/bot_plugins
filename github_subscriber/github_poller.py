@@ -33,7 +33,7 @@ class GitHubPoller:
         if token:
             headers["Authorization"] = f"Bearer {token}"
 
-        self._client = httpx.AsyncClient(headers=headers, timeout=30)
+        self._client = httpx.AsyncClient(headers=headers, timeout=30, trust_env=False)
         self._default_interval = max(poll_interval, 30)
         self._repos: dict[str, RepoState] = {}
 

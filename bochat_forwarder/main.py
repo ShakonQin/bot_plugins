@@ -149,11 +149,14 @@ class BochatForwarderPlugin(NcatBotPlugin):
             + sum(len(v) for v in self._qq_to_bochat_private_routes.values()),
         )
 
+        bot_token = bochat_cfg.get("bot_token", "")
+        if not bot_token:
+            LOG.error("bochat.bot_token 未配置，请在 config.yaml 中填写 Bot Token")
+            return
         self._bridge = BochatBridge(
             base_url=bochat_cfg.get("base_url", "http://127.0.0.1:8080"),
-            account=bochat_cfg.get("account", ""),
-            password=bochat_cfg.get("password", ""),
-            bot_id=bochat_cfg.get("bot_id", ""),
+            bot_token=bot_token,
+            group_ids=bochat_cfg.get("group_ids"),
         )
 
         try:
@@ -256,7 +259,7 @@ class BochatForwarderPlugin(NcatBotPlugin):
         if not routes:
             return
 
-        sender_name = event.sender.get("nickname", "") if isinstance(event.sender, dict) else str(event.user_id)
+        sender_name = event.sender.card or event.sender.nickname or str(event.user_id)
 
         for route in routes:
             if not self._bridge:
@@ -291,7 +294,7 @@ class BochatForwarderPlugin(NcatBotPlugin):
         if not routes:
             return
 
-        sender_name = event.sender.get("nickname", "") if isinstance(event.sender, dict) else str(event.user_id)
+        sender_name = event.sender.nickname or str(event.user_id)
 
         for route in routes:
             if not self._bridge:

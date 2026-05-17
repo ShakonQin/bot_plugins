@@ -37,14 +37,14 @@ BoChat 与 QQ 消息双向转发插件，在 BoChat 平台和 QQ 群之间建立
 ncatbot-plugins/
 ├── README.md                    # 本文件
 ├── .gitignore                   # Git 忽略规则
+├── run.py                       # 统一启动器
 ├── github_subscriber/           # GitHub 订阅插件
 │   ├── README.md
-│   ├── manifest.toml
 │   ├── main.py
 │   ├── github_poller.py
 │   ├── event_formatter.py
 │   ├── bochat_bridge.py
-│   ├── config.yaml.example      # 配置文件示例
+│   ├── config.yaml              # 配置文件
 │   └── __init__.py
 ├── bochat_forwarder/            # BoChat 转发插件
 │   ├── README.md
@@ -52,15 +52,14 @@ ncatbot-plugins/
 │   ├── main.py
 │   ├── bochat_bridge.py
 │   ├── formatter.py
-│   ├── config.yaml.example      # 配置文件示例
+│   ├── config.yaml              # 配置文件
 │   └── __init__.py
 └── translator/                  # 翻译插件
     ├── README.md
-    ├── manifest.toml
     ├── main.py
     ├── translator.py
     ├── bochat_bridge.py
-    ├── config.yaml.example      # 配置文件示例
+    ├── config.yaml              # 配置文件
     └── __init__.py
 ```
 
@@ -97,13 +96,15 @@ pip install bochat-sdk
 
 ### 4. 配置插件
 
-进入插件目录，复制示例配置文件并编辑：
+进入插件目录，编辑 `config.yaml`：
 
 ```bash
 cd /path/to/your-bot/plugins/github_subscriber
-cp config.yaml.example config.yaml
-# 编辑 config.yaml 填入你的配置
+# 编辑 config.yaml，填写 bot_token 等配置
 ```
+
+每个插件的 `config.yaml` 中需要填写 `bochat.bot_token`（BoChat Bot Token）。
+可通过 BoChat 平台的 `GET /api/v1/bots` 接口获取 Bot 的 `token` 字段。
 
 ### 5. 运行
 
@@ -131,7 +132,7 @@ ncatbot run
 
 ## 注意事项
 
-1. **安全提醒**：不要将包含敏感信息的 `config.yaml` 文件提交到公开仓库
+1. **安全提醒**：不要将包含敏感信息的 `config.yaml` 文件提交到公开仓库（Bot Token 等）
 2. **API 限制**：GitHub API 有速率限制，建议配置 Token 以提升限额
 3. **依赖管理**：确保已安装所有必要的依赖包
 4. **配置备份**：建议备份你的 `config.yaml` 文件，避免丢失配置

@@ -26,7 +26,7 @@ ncatbot-bochat-forwarder/
 - Python >= 3.12
 - NcatBot 已安装并可运行 (`pip install ncatbot5`)
 - BoChat 服务已启动
-- 已有 BoChat 账号（注册后自动创建默认 Bot）
+- 已有 BoChat Bot Token（通过 `GET /api/v1/bots` 接口获取）
 
 ## 安装
 
@@ -58,10 +58,14 @@ pip install -e ".[ws]"
 ```yaml
 bochat:
   base_url: "http://127.0.0.1:8080"
-  account: "your_account"
-  password: "your_password"
-  bot_id: ""  # 留空自动选择第一个活跃 Bot
+  bot_token: "b_xxx:1710000000:signature"  # BoChat Bot Token（必填）
+  # 可选：指定监控的群号列表，留空则监控 Bot 所在的所有群
+  # group_ids:
+  #   - "g_abc123"
+  #   - "g_def456"
 ```
+
+获取 Bot Token：在 BoChat 平台登录后，通过 `GET /api/v1/bots` 接口获取 Bot 的 `token` 字段。
 
 ### 2. 配置转发路由
 
@@ -148,7 +152,7 @@ NcatBot (OneBot v11)          BochatBridge (SDK)
 
 ## 注意事项
 
-- 不要把 BoChat 账号密码提交到 Git 仓库
+- 不要把 Bot Token 提交到 Git 仓库
 - `ignore_bots: true` 可防止 Bot 自身消息被转发导致的无限回环
 - 双向转发时两条路由都应开启 `ignore_bots`
 - 修改 `config.yaml` 后需重载插件才能生效
